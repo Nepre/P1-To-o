@@ -1,5 +1,6 @@
 #include <iostream>
 using namespace std;
+///mnt/c/Users/anton/Documents/P1-To-o/Cosas Hechas/Prog Modular$  
 
 void leePar(char &c1, char &c2, int &n) {
   cout<<"Introduce un caracter:";
