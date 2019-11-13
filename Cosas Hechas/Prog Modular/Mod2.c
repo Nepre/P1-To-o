@@ -4,7 +4,9 @@
 
 using namespace std;
 
-///mnt/c/Users/anton/Documents/P1-To-o/Cosas Hechas/Prog Modular$
+
+
+//cd mnt/c/Users/anton/Documents/P1-To-o/
 
 
 void reparteCarta (int &nJ);
