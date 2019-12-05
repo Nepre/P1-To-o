@@ -18,10 +18,15 @@ int int main() {
   cmon = 0;
   int tam[FILAS][COLUMNAS];
   srand(time(NULL));
+  GenPos();
+  while (terminado == false) {
+    getDireccion();
+    moverJugador();
+  }
 
   return 0;
 }
-void ElijeTam(int tam[FILAS][COLUMNAS]){
+void ElijeTam(int &tam[FILAS][COLUMNAS]){
   cout << "Por favor, introduzca la cantidad de filas y columnas con las que jugará"<<endl;
   cin>> FILAS;
   cout<<"Jugará con "<<FILAS<<" filas"<<endl;
@@ -30,11 +35,35 @@ void ElijeTam(int tam[FILAS][COLUMNAS]){
 }
 
 
-void GenPos(int &ftes, int &ctes, int &fmon, int &cmon, int &fsal, int &csal){
+void GenPos(int &tam[FILAS][COLUMNAS]){
   for (int i = 0; i < FILAS; i++) {
+    for (int j = 0; j < COLUMNAS; j++) {
+      if(i == 0 && j == 0) tam[i][j] == 'J';
+      else if(valor == 2 )
+      else if
+      else tam[i][j] = '.'
+    }
+  }
+}
 
-    for (int j = 0; i < COLUMNAS; j++) {
+void dibujaEscenario(&tam){
+  for (size_t i = 0; i < count; i++) {
+    for (size_t j = 0; j < count; j++) {
       /* code */
     }
+  }
+}
+
+void moverJugador(&tam, dir, posPlX, posPlY, &terminado){
+  if(dir == N){
+    if(posPlY + 1 < 0 || posPlY +1 > FILAS){
+      cout<<"No puedes ir por ahí";
+      return;
+    }
+    if(tam[posPlX][posPlY+1] == 'M'){
+      cout<<"Estas muerto subno";
+      terminado == true;
+    }
+
   }
 }
