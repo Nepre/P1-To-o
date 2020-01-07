@@ -13,12 +13,17 @@ typedef struct{
   int num;
   TCadena nombre;
   char ing[3];
+  /*
+  char ing1; //a
+  char ing2; //z
+  char ing3; //xa
+  */
   int numIngred;
   bool enviado;
   THora hora;
 }TPedido;
 
-typedef TPedido TPizzeria[100];
+typedef TPedido TPizzeria[100];//TPizzeria es un tipo que crea arrays de 100 TPedido
 
 char menu();//Lo pone como char por que lo trata como char, podria ser int
 void alta(TPizzeria, int &);//contador de pizzas, lleva & por que se irá sumando uno importante ponerlo por referencia
@@ -26,19 +31,22 @@ void marcar(TPizzeria, int);//Para saber cuantas celdas tienen pedidos
 void mostrar(TPizzeria, int);
 
 int main(){
-  TPizzeria pizzas;
+  TPizzeria pizzas;//array de 100 TPedidos
+
   int cont;//Para saber cuantas pizzas tienes
   char op;//Será la opcion.
   cont = 0;
 
-  op = menu();
-  switch (op) {
-    case '1':alta(pizzas, cont);
-            break;
-    case '2':marcar(pizzas, cont);
-            break;
-    case '3':mostrar(pizzas, cont);
-            break;
+  do{
+    op = menu();
+    switch (op) {
+      case '1':alta(pizzas, cont);
+              break;
+      case '2':marcar(pizzas, cont);
+              break;
+      case '3':mostrar(pizzas, cont);
+              break;
+    }
   }while (op!='4');
 return 0;
 }
@@ -101,7 +109,7 @@ void mostrar(TPizzeria pizzas, int cont){
   cin >> ing;
   for (i = 0; i < cont; i++) {
     for (j = 0; j < pizzas[i].numIngred; j++) {
-      if (ing = pizzas[i].ing[j]) {
+      if (ing == pizzas[i].ing[j]) {
         cantidad ++;
       }
     }
