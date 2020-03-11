@@ -345,25 +345,34 @@ void test(const Chatbot &megabot){
 }
 
 void report(const Chatbot &megabot){
+  float totalIntents = 0, totalExamples = 0, expIntent = 0;
+
+  cout<<"Similarity: Jaccard"<<endl;
+  cout<<"Threshold: "<<megabot.threshold<<endl;
   for (int i = 0; i < megabot.intents.size(); i++)
   {
     Intent in = megabot.intents[i];
-    cout << "Name: "<< in.name << endl
-         << "Response: "<< in.response << endl
-         << "Intents: "<<endl;
+    cout << "Intent: "<< in.name << endl;
+    totalIntents++;
+    cout << "Response: "<< in.response << endl;
     for (int j = 0; j < in.examples.size(); j++)
     {
       Example ex = in.examples[j];
-      cout<< "  -ID: "<< ex.id << endl
-          << "  -Texto: "<< ex.text<< endl
-          << "  -Tokens: "<< endl;
+      cout<< "Example "<< ex.id << " : "<< ex.text<< endl;
+      totalExamples++;
+      cout<< "Tokens " <<ex.id<<" : ";
       for (int k = 0; k < ex.tokens.size(); k++)
       {
-        cout<< "    + " << ex.tokens[k]<<endl;
+        cout<<"< "<<ex.tokens[k]<<" >  ";      
       }
+      cout<<endl;
+      
       
     }
-    
+    cout<<"Total intents: "<<totalIntents<<endl;
+    cout<<"Total examples: "<<totalExamples<<endl;
+    expIntent = totalExamples/totalIntents;
+    cout<<"Examples per intent: "<<expIntent<<endl;
     
     
   }
