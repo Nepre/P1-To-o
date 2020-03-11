@@ -8,7 +8,15 @@ typedef char nombrecoche[10];
 
 typedef struct{
   nombrecoche nombre;
-  int ruedas;
+  bool ruedas[4];
+  /
+    X-|M|-B
+      | |
+    B-|A|-B
+    Matricula: 1969 kkk
+    M = 5
+
+  */
   int motor;
   bool aceite;
 }TCoche;
@@ -39,7 +47,7 @@ int main (){
       cout<< "op3"<<endl;
     }
     else if (op == 3){
-      dardealta(reparar, coche);
+      dardebaja(reparar, coche);
       cout<< "op4"<<endl;
     }
 
@@ -64,28 +72,31 @@ int menu(){
 void cochenuevo(ncoches reparar, int &coche){
   char aceite;
   cout<<"Qué modelo es el coche? ";
-  cin>>reparar[coche].nombre;
+  cin.get();
+  cin.getline(reparar[coche].nombre, 10);
   do {
     cout<<"Del 0 al 5 como de nuevo esta el motor de su coche?";
-    cin.get();
-    cin.getline(reparar[coche].motor, 10);
+    cin>>reparar[coche].motor;
   } while(reparar[coche].motor<0 || reparar[coche].motor>5 );
   cout<<"Se ha de cambiar el aceite?(s/n) ";
   cin>>aceite;
   if (aceite == 's' ||aceite == 'S') {
-    reparar[coche].aceite == false;
+    reparar[coche].aceite = false;
   }
 
   cout<<"Cuantas de las 4 ruedas se han de reparar? ";
   cin>>reparar[coche].ruedas;
+  coche ++;
 }
 
 void estadocoche(ncoches reparar, int &coche){
   cout<<"Qué coche quiere ver?";
   cin.get();
-  cin.getline(reparar[coche].motor, 10);
-  if (/* condition */) {
-    /* code */
+  cin.getline(reparar[coche].nombre, 10);
+  for (int i = 0; i < coche; i++) {
+    if(strcmp(reparar[i].nombre,coche)==0){
+      posCocheRep = i;
+    }
   }
 }
 
@@ -99,13 +110,11 @@ void reparacoche(ncoches reparar, int &coche){
       posCocheRep = i;
     }
   }
-  for (int i = posCocheRep; i < coche; i++) {
-    reparar[coche].aceite == true;
-    reparar[coche].ruedas == 4;
-    reparar[coche].motor == 5;
-  }
+  reparar[posCocheRep].aceite == true;
+  reparar[posCocheRep].ruedas == 4;
+  reparar[posCocheRep].motor == 5;
 }
 
-void dardealta(ncoches reparar, int &coche){
+void dardebaja(ncoches reparar, int &coche){
 
 }

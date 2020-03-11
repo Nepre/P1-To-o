@@ -1,0 +1,10 @@
+printX(1)
+X
+printX(2)
+ERROR
+printX(5)
+X   X
+ X X 
+  X  
+ X X 
+X   X

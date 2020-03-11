@@ -72,6 +72,10 @@ void baja(productos objeto, int &lugar, char conf){
     for (int i = posObjetosBorrar; i < lugar-1; i++) {
       objeto[i] = objeto[i+1];
     }
+    /*
+    objeto[posObjetosBorrar] = objeto[lugar-1]; // Esto coge el último objeto y lo pone donde está el objeto a borrar, sustituyendolo
+    lugar --; // 1 - 2 - 3 - 4 - 5 --> borramos 2 --> 1 - 5 - 3 - 4 - 5 --> lugar-- --> entonces obviamos el último 5 quedando 1 - 5 - 3 - 4
+    */
   }
   else{
     cout<<"No elija esta opción si no va a borrar, payaso"<<endl;

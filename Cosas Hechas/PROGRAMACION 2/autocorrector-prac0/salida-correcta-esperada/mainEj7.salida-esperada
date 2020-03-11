@@ -1,0 +1,3 @@
+sumNeighbors(matrix,2,2)=104
+sumNeighbors(matrix,0,0)=15
+sumNeighbors(matrix,4,4)=63

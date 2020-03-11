@@ -1,0 +1,7 @@
+checkPassword(holaMundo)=0
+checkPassword(hlM7no)=0
+checkPassword(hlM7no8kj43)=1
+checkPassword(hlM7no8kj43aa)=0
+checkPassword(hola, mundo)=0
+checkPassword(0123456789012345)=1
+checkPassword(01234567890123a5)=0
