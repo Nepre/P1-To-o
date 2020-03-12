@@ -313,48 +313,50 @@ void test(const Chatbot &megabot){
   vector<string> tokens;
   int position = rand() % KSIZE;
   cout << ">> " << greetings[position] << endl;
-  cout << "<< ";
-  getline(cin, pregunta);
-  pregunta = cleanString(pregunta);
-  tokens = tokenizador(pregunta);
-
-  for (int i = 0; i < tokens.size(); i++)
+  do
   {
-    // Así no comparamos con uno mismo, sino que empezamos por donde esté i
-    for (int j = i + 1; j < tokens.size(); j++)
+    cout << "<< ";
+    getline(cin, pregunta);
+    pregunta = cleanString(pregunta);
+    tokens = tokenizador(pregunta);
+
+    for (int i = 0; i < tokens.size(); i++)
     {
-      if(tokens[i].compare(tokens[j])){
-        tokens.erase(tokens.begin() + j);
-        j--;
+      // Así no comparamos con uno mismo, sino que empezamos por donde esté i
+      for (int j = i + 1; j < tokens.size(); j++)
+      {
+        if(tokens[i].compare(tokens[j])){
+          tokens.erase(tokens.begin() + j);
+          j--;
+        }
       }
     }
-  }
-
-  
-  float jaccardNum = megabot.threshold;
-  int posVector = -1;
-
-  for (int i = 0; i < megabot.intents.size(); i++)
-  {
-    for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+    float jaccardNum = megabot.threshold;
+    int posVector = -1;
+    for (int i = 0; i < megabot.intents.size(); i++)
     {
-      float auxJaccard = jaccard(tokens, megabot.intents[i].examples[j].tokens);
-      if(auxJaccard > jaccardNum){
-        jaccardNum = auxJaccard;
-        posVector = i;
-      }
+      for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+      {
+        float auxJaccard = jaccard(tokens, megabot.intents[i].examples[j].tokens);
+        if(auxJaccard > jaccardNum){
+          jaccardNum = auxJaccard;
+          posVector = i;
+        }
 
+      }
+      
+    }
+
+    if(posVector != -1){
+      cout<< ">> " << megabot.intents[posVector].response<<endl;
+    }
+    else if (pregunta != "q"){
+      error(ERR_RESPONSE);
     }
     
-  }
-
-  if(posVector != -1){
-    cout<< ">> " << megabot.intents[posVector].response<<endl;
-  }
-  else{
-    error(ERR_RESPONSE);
-  }
+  } while (pregunta != "q");
   
+ 
 
   
 }
