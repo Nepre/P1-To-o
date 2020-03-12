@@ -145,6 +145,7 @@ vector<string> tokenizador(string example){
   for (int i = 0; i < example.size(); i++)
   {
     example[i] = tolower(example[i]);
+    
     if ((!(isdigit(example[i]) || isalpha(example[i])) && !(example[i] == ' ')) || example[i] == '?')
     {
       example.erase(i, 1);
@@ -164,6 +165,11 @@ vector<string> tokenizador(string example){
   }
 
   if(token != ""){
+    if(token[token.size()-1] == 's')
+    {
+    token.erase(token.size()-1, 1);
+    }
+
     tokens.push_back(token);
     token = "";
   }
@@ -215,15 +221,24 @@ void deleteExample(Chatbot &megabot){
   int id;
   cout<<"Example id: ";
   cin>>id;
-  for (int i = 0; i < megabot.intents.size(); i++)
+  if (megabot.nextId<= id && megabot.nextId>0)
   {
-    for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+    for (int i = 0; i < megabot.intents.size(); i++)
     {
-      if(megabot.intents[i].examples[j].id == id){
-        megabot.intents[i].examples.erase(megabot.intents[i].examples.begin()+j);
-      }    
+      for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+      {
+        if(megabot.intents[i].examples[j].id == id){
+          megabot.intents[i].examples.erase(megabot.intents[i].examples.begin()+j);
+        }    
+      }
     }
   }
+  else
+  {
+     cout<<ERR_EXAMPLE<<endl;
+     
+  }
+  
   
 }
 
@@ -386,7 +401,7 @@ int main(){
   megabot.threshold=0.25;
   strcpy(megabot.similarity,"jc");
 
-  srand(666);
+  srand(101);
 
   char option;
   do{
