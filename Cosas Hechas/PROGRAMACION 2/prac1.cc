@@ -91,7 +91,7 @@ void showTrainMenu(){
 int bPosicion(Chatbot megabot, string name){
 	int i, pos;
 	pos = -1;
-	for(i = 0; i < megabot.intents.size() && pos == -1; i++){
+	for(i = 0; i < (int) megabot.intents.size() && pos == -1; i++){
 		if(megabot.intents[i].name.compare(name) == 0){
 			pos = i;
 		}
@@ -139,24 +139,18 @@ void deleteIntent(Chatbot &megabot){
   }
 }
 
-vector<string> tokenizador(string example){
+vector<string> tokenizador(string example){ 
   string token = "";
   vector<string> tokens;
-  for (int i = 0; i < example.size(); i++)
+  for (int i = 0; i < (int)example.size(); i++)
   {
     example[i] = tolower(example[i]);
     
-    if ((!(isdigit(example[i]) || isalpha(example[i])) && !(example[i] == ' ')) || example[i] == '?')
+    if ((isdigit(example[i]) || isalpha(example[i])) && !(example[i] == 's' && example[i+1] == ' '))
     {
-      example.erase(i, 1);
-      i--;
+      token += example[i]; 
     }
     
-
-    if (example[i] != ' ')
-    {
-      token.push_back(example[i]);
-    }
     else if (!token.empty())
     {
       tokens.push_back(token);
@@ -223,9 +217,9 @@ void deleteExample(Chatbot &megabot){
   cin>>id;
   if (megabot.nextId<= id && megabot.nextId>0)
   {
-    for (int i = 0; i < megabot.intents.size(); i++)
+    for (int i = 0; i < (int)megabot.intents.size(); i++)
     {
-      for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+      for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)
       {
         if(megabot.intents[i].examples[j].id == id){
           megabot.intents[i].examples.erase(megabot.intents[i].examples.begin()+j);
@@ -292,9 +286,9 @@ void train(Chatbot &megabot){
 
 float jaccard(vector<string> tokens, vector<string> example){
   float similares = 0; // Un entero no es divisible en decimal
-  for (int i = 0; i < tokens.size(); i++)
+  for (int i = 0; i < (int)tokens.size(); i++)
   {
-    for (int j = 0; j < example.size(); j++)
+    for (int j = 0; j < (int)example.size(); j++)
     {
       if(tokens[i].compare(example[j]) == 0){
         similares++;
@@ -320,10 +314,10 @@ void test(const Chatbot &megabot){
     pregunta = cleanString(pregunta);
     tokens = tokenizador(pregunta);
 
-    for (int i = 0; i < tokens.size(); i++)
+    for (int i = 0; i < (int)tokens.size(); i++)
     {
       // Así no comparamos con uno mismo, sino que empezamos por donde esté i
-      for (int j = i + 1; j < tokens.size(); j++)
+      for (int j = i + 1; j <(int) tokens.size(); j++)
       {
         if(tokens[i].compare(tokens[j])){
           tokens.erase(tokens.begin() + j);
@@ -333,9 +327,9 @@ void test(const Chatbot &megabot){
     }
     float jaccardNum = megabot.threshold;
     int posVector = -1;
-    for (int i = 0; i < megabot.intents.size(); i++)
+    for (int i = 0; i < (int)megabot.intents.size(); i++)
     {
-      for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+      for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)
       {
         float auxJaccard = jaccard(tokens, megabot.intents[i].examples[j].tokens);
         if(auxJaccard > jaccardNum){
@@ -366,21 +360,21 @@ void report(const Chatbot &megabot){
 
   cout<<"Similarity: Jaccard"<<endl;
   cout<<"Threshold: "<<megabot.threshold<<endl;
-  for (int i = 0; i < megabot.intents.size(); i++)
+  for ( int i = 0; i < (int)megabot.intents.size(); i++)
   {
     Intent in = megabot.intents[i];
     cout << "Intent: "<< in.name << endl;
     totalIntents++;
     cout << "Response: "<< in.response << endl;
-    for (int j = 0; j < in.examples.size(); j++)
+    for (int j = 0; j < (int)in.examples.size(); j++)
     {
       Example ex = in.examples[j];
       cout<< "Example "<< ex.id << " : "<< ex.text<< endl;
       totalExamples++;
       cout<< "Tokens " <<ex.id<<" : ";
-      for (int k = 0; k < ex.tokens.size(); k++)
+      for (int k = 0; k < (int)ex.tokens.size(); k++)
       {
-        cout<<"< "<<ex.tokens[k]<<" >  ";      
+        cout<<"<"<<ex.tokens[k]<<"> ";      
       }
       cout<<endl;
       
