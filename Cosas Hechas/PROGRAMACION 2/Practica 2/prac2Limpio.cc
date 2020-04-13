@@ -154,6 +154,7 @@ bool isequal(char sim[3], string jcng)
     }
     
   }
+  return true;
 }
 
 void config(Chatbot &megabot){
@@ -170,10 +171,8 @@ void config(Chatbot &megabot){
   {
    for (int i = 0; i < 3; i++)
    {
-     sim[i]==megabot.similarity[i];
+     sim[i]=megabot.similarity[i];
    }
-    
-    cout<<megabot.threshold<<"------"<<megabot.similarity<<endl;
   }
   else
   {
@@ -269,18 +268,18 @@ void expData(Chatbot megabot){
     esc.open(filename, ios::out);
     if (esc.is_open())
     {
-      for (int i = 0; i < megabot.intents.size(); i++)
+      for (int i = 0; i < (int)megabot.intents.size(); i++)
       {
         esc<<"#";
         esc<<megabot.intents[i].name;
         esc<<"#";
         esc<<megabot.intents[i].response;
         esc<<"\n";
-        for (int j = 0; j < megabot.intents[i].examples.size(); j++)
+        for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)
         {
           esc<<megabot.intents[i].examples[j].text;
 
-          if(megabot.intents[i].examples[j].text[megabot.intents[i].examples[j].text.size()-1] != '\n' && j != (megabot.intents.size()-1)){
+          if(megabot.intents[i].examples[j].text[megabot.intents[i].examples[j].text.size()-1] != '\n' && (j != (int)megabot.intents.size()-1)){
             esc<<"\n";
           }
         }        
@@ -303,7 +302,7 @@ void expData(Chatbot megabot){
         esc<<"#";
         esc<<megabot.intents[pos].response;
         esc<<"\n";
-        for (int j = 0; j < megabot.intents[pos].examples.size(); j++)
+        for (int j = 0; j < (int)megabot.intents[pos].examples.size(); j++)
         {
           esc<<megabot.intents[pos].examples[j].text;
         }
