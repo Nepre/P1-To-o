@@ -151,10 +151,8 @@ bool isequal(char sim[3], string jcng)
     else
     {
       return true;
-    }
-    
+    }    
   }
-  return true;
 }
 
 void config(Chatbot &megabot){
@@ -171,17 +169,13 @@ void config(Chatbot &megabot){
   {
    for (int i = 0; i < 3; i++)
    {
-     sim[i]=megabot.similarity[i];
+     megabot.similarity[i] = sim[i];
    }
   }
   else
   {
     error(ERR_SIMILARITY);
   }
-  
-
-  
-
 }
 
 void impDataFile(Chatbot &megabot, string filename){
@@ -231,6 +225,7 @@ void impDataFile(Chatbot &megabot, string filename){
         if(pos == -1){
           Example example;
           example.text = line;
+
           line = cleanString(line);
           example.tokens = tokenizador(line);
           example.id = megabot.nextId;
@@ -290,6 +285,7 @@ void expData(Chatbot megabot){
   else
   {
     string intentName;
+    string filename;
     int pos = -1;
     cout<<"Intent name: ";
     cin.ignore();
@@ -297,6 +293,11 @@ void expData(Chatbot megabot){
     pos = bPosicion(megabot, intentName);
     if (pos != -1)
     {
+      cout<<"File name: ";
+      getline(cin, filename);
+      ofstream esc;
+      esc.open(filename, ios::out);
+      if(esc.is_open()){
         esc<<"#";
         esc<<megabot.intents[pos].name;
         esc<<"#";
@@ -304,9 +305,16 @@ void expData(Chatbot megabot){
         esc<<"\n";
         for (int j = 0; j < (int)megabot.intents[pos].examples.size(); j++)
         {
-          esc<<megabot.intents[pos].examples[j].text;
+          esc<<megabot.intents[pos].examples[j].text<<"\n";
         }
+      }
+      esc.close();
     }
+    else
+    {
+      error(ERR_INTENT);
+    }
+    
     
   }
   
@@ -570,7 +578,7 @@ void test(const Chatbot &megabot){
 void report(const Chatbot &megabot){
   float totalIntents = 0, totalExamples = 0, expIntent = 0;
 
-  cout<<"Similarity: Jaccard"<<endl;
+  cout<<"Similarity: "<<megabot.similarity<<endl;
   cout<<"Threshold: "<<megabot.threshold<<endl;
   for ( int i = 0; i < (int)megabot.intents.size(); i++)
   {
