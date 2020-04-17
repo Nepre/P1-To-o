@@ -64,7 +64,7 @@ enum Error{
 string cleanString(string);
 vector<string> tokenizador(string example);
 vector<string> n_grama(string example);
-void loadChatbotFile(Chatbot &megabot,string filename, bool param);
+void loadChatbotFile(Chatbot &megabot,string filename);
 
 const string greetings[KSIZE]={
   "Hola, ¿en qué puedo ayudarte?",
@@ -131,8 +131,8 @@ void showTrainMenu(){
        << "b- Back to main menu" << endl
        << "Option: ";
 }
-int bPosicion(Chatbot megabot, string name){ //busca la posicion en el chatbot del string que se introduzca
-  int i, pos;                                //poniendo pos con el vlaor de -1, si esto es así el valor no cambia
+int bPosicion(Chatbot megabot, string name){
+  int i, pos;
 	pos = -1;
 	for(i = 0; i < (int) megabot.intents.size() && pos == -1; i++){
 		if(megabot.intents[i].name.compare(name) == 0){
@@ -142,24 +142,25 @@ int bPosicion(Chatbot megabot, string name){ //busca la posicion en el chatbot d
 	return pos;
 }
 
-bool isequal(char sim[3], string compare) //compara un array de tres caracteres con un string y según sea o no devuelve un bool
+bool isequal(char sim[3], string jcng)
 {
-  bool itIs=true;
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < (int)jcng.size(); i++)
   {
-    if((sim[i] != compare[i])){
-      itIs = false;
+    if((sim[i] != jcng[i]) && (sim[i]>2)){
+      return false;
+    }
+    else
+    {
+      return true;
     }    
   }
-
-  return itIs;
-  
+  return true;
 }
 
-bool isequal(const char sim[3], string jcng) //Lo usamos para en el caso que necesitemos comparar un array de caracteres con un string,
+bool isequal(const char sim[3], string jcng)
 {
-  for (int i = 0; i < (int)jcng.size(); i++) //está repetido pero declarando el array de caracteres como constante por que es necesario 
-  {                                          // para mandar por parámetros a argv que es un array de caracteres constantes
+  for (int i = 0; i < (int)jcng.size(); i++)
+  {
     if((sim[i] != jcng[i]) && (sim[i]>2)){
       return false;
     }
@@ -175,13 +176,12 @@ void loadChatbot(Chatbot &megabot){
   cout<<"Enter filename: ";
   string filename;
   getline(cin, filename);
-  loadChatbotFile(megabot, filename, false); //lo hacemos en una función para que a la hora de hacer los argumentos sea más sencillo acceder a load
+  loadChatbotFile(megabot, filename);
 }
 
 
-void loadChatbotFile(Chatbot &megabot,string binName, bool param){
+void loadChatbotFile(Chatbot &megabot,string binName){
   Chatbot newMegabot;
-  char res;
   BinChatbot bcb;
   vector<Intent> intents;
   BinIntent bi;
@@ -192,63 +192,46 @@ void loadChatbotFile(Chatbot &megabot,string binName, bool param){
   int id = 1;
   ifstream fl;
 
-  fl.open(binName,ios::in | ios::binary); //abrimos el archivo para leer binario
-  if(fl.is_open()){                       //si se consigue abrir(es decir, existe)
-    if(!param){                           //y no lo ha abierto por parametros
-      do{
-        cout<<"Confirm [Y/N]?: ";         //pide la confirmación hasta que introduzca un caracter valido
-        cin>>res;
-      }while(res != 'y' && res != 'Y' && res != 'n' && res != 'N');
+  fl.open(binName,ios::in | ios::binary);
+  if(fl.is_open()){
+    fl.read((char *)&bcb,sizeof(bcb));
+
+    newMegabot.threshold = bcb.threshold;
+    for (int i = 0; i < 3; i++)
+    {
+      newMegabot.similarity[i] = bcb.similarity[i];
     }
-    else{
-      res = 'y';
+    newMegabot.nextId = id;
+    for (unsigned i = 0; i < bcb.numIntents; i++)
+    {
+      fl.read((char *)&bi,sizeof(bi));
+      intAux.name = (string)bi.name;
+      intAux.response = (string) bi.response;  
+      intAux.examples.clear();    
+      for (int j = 0; j < (int)bi.numExamples; j++)
+      { 
+        fl.read((char *)&exampleAux,sizeof(exampleAux));
+        
+        auxStr = exampleAux;
+        expAux.text = exampleAux;
+        //expAux.tokens = tokenizador(exampleAux);
+
+        if (isequal(megabot.similarity, "jc"))
+        {
+          expAux.tokens = tokenizador(exampleAux);
+        }
+        else if(isequal(megabot.similarity, "ng"))
+        {
+          expAux.tokens = n_grama(exampleAux);
+        }
+    
+        expAux.id = id;
+        id++;
+        intAux.examples.push_back(expAux);
+      }   
+      newMegabot.intents.push_back(intAux); 
     }
-
-    if(res == 'y' || res == 'Y'){
-      fl.read((char *)&bcb,sizeof(bcb));
-
-      newMegabot.threshold = bcb.threshold; //creamos un nuevo struct en el que guardaremos todos los datos para luego meterlos en el megabot
-      for (int i = 0; i < 3; i++)           //que es el que modificaremos (Chatbot megabot)
-      {
-        newMegabot.similarity[i] = bcb.similarity[i];
-      }
-      newMegabot.nextId = id;
-      for (unsigned i = 0; i < bcb.numIntents; i++) //los dos bucles anidados sirven para acceder a los intents y dentro de estos a cada ejemplo
-      {
-        fl.read((char *)&bi,sizeof(bi));            // de cada uno de los intents
-        intAux.name = (string)bi.name;
-        intAux.response = (string) bi.response;  
-        intAux.examples.clear();    
-        for (int j = 0; j < (int)bi.numExamples; j++)
-        { 
-          fl.read((char *)&exampleAux,sizeof(exampleAux));  //leemos el example y lo guardamos en un string auxiliar para luego tokenizarlo de
-                                                            //la manera que corresponda
-          auxStr = exampleAux;
-          expAux.text = exampleAux;
-
-          if (isequal(megabot.similarity, "jc"))
-          {
-            expAux.tokens = tokenizador(exampleAux);
-          }
-          else if(isequal(megabot.similarity, "ng"))
-          {
-            expAux.tokens = n_grama(exampleAux);
-          }
-      
-          expAux.id = id;
-          if(expAux.tokens.size() != 0){
-            id++;
-            intAux.examples.push_back(expAux);
-          }
-
-        }   
-        newMegabot.intents.push_back(intAux); 
-      }
-      megabot = newMegabot; //metemos al megabot que usaremos todo lo almacenado y leido del binario
-    }
-  }
-  else{
-    error(ERR_FILE);
+    megabot = newMegabot;
   }
   fl.close();
 }
@@ -266,25 +249,25 @@ void saveChatbot(Chatbot megabot){
   cout<< "Enter filename: ";
   cin.clear();
   getline(cin, binName);
-  fl.open(binName,ios::out | ios::binary);//abrimos para escritura el archivo
+  fl.open(binName,ios::out | ios::binary);
 
   if(fl.is_open()){
-     bcb.threshold = megabot.threshold;//metemos en la variable todo el megabot que ya tenemos, en este caso el threshold
+     bcb.threshold = megabot.threshold;
 
 
-    for (int i = 0; i < 3; i++) //aqui metemos cada caracter del similarity que se comprobará luego para ver si es Jaccard o N-gramas
+    for (int i = 0; i < 3; i++)
     {
       bcb.similarity[i] = megabot.similarity[i]; 
     }
     bcb.numIntents = megabot.intents.size();
-    fl.write((char *)&bcb,sizeof(bcb));//una vez guardadas algunas partes escribimos en el fichero
+    fl.write((char *)&bcb,sizeof(bcb));
 
     for (unsigned i = 0; i < megabot.intents.size(); i++)
     {
       
-      strcpy(bi.name,  megabot.intents[i].name.c_str()); //después de almacenar cada uno de los strings, datos etc... lo escribimos en el fichero binario
+      strcpy(bi.name,  megabot.intents[i].name.c_str());
       bi.name[KMAXTEXTS-1] = '\0';
-      bi.numExamples = megabot.intents[i].examples.size();//leemos el name, examples y responses y dentro de cada uno el text
+      bi.numExamples = megabot.intents[i].examples.size();
       strcpy(bi.response, megabot.intents[i].response.c_str());
       bi.response[KMAXTEXTL-1] = '\0';
       fl.write((char *)&bi,sizeof(bi));
@@ -299,9 +282,6 @@ void saveChatbot(Chatbot megabot){
       }   
     }
   }
-  else{
-    error(ERR_FILE);
-  }
   fl.close();
 
 }
@@ -309,15 +289,12 @@ void saveChatbot(Chatbot megabot){
 
 void config(Chatbot &megabot){
   char sim[3];
-  float thresh;
+
   cout<<"Enter threshold: ";
-  cin>>thresh;
-  if (thresh<0 || thresh>1) //si el threshold se sale no lo almcenamos e imprimimos el error
+  cin>>megabot.threshold;
+  if (megabot.threshold<0 && megabot.threshold>1)
   {
     error(ERR_THRESHOLD);
-  }
-  else{
-    megabot.threshold = thresh;
   }
   cout<<"Enter algorithm: ";
   cin>>sim;  
@@ -325,7 +302,7 @@ void config(Chatbot &megabot){
   {
    for (int i = 0; i < 3; i++)
    {
-     megabot.similarity[i] = sim[i]; //de lo contrario se almacena el threshold y el tipo de similitud que usaremos, comprobando si es valido o no
+     megabot.similarity[i] = sim[i];
    }
   }
   else
@@ -347,23 +324,23 @@ void impDataFile(Chatbot &megabot, string filename){
   {
     while (getline(lec,line))
     {
-      if (line[0]=='#')                   //comprobamos si comienza por un #
+      if (line[0]=='#')
       {
-        if(pos == -1 && name != ""){      
-          megabot.intents.push_back(nuevo);//hacemos push back del nuevo intent
+        if(pos == -1 && name != ""){
+          megabot.intents.push_back(nuevo);
         }
         name = response = "";
         isResponse=false;
         nuevo.examples.clear();
-        for (int i = 1; i < (int)line.size(); i++) //para ver si tenemos más intents que comiencen por # comprobamos con un if y utilizamos un 
+        for (int i = 1; i < (int)line.size(); i++)
         {
-          if (line[i]=='#')                       // bool y segun sea o no lo ponemos a true o false
+          if (line[i]=='#')
           {
             isResponse=true;
           }
           else
           {
-            if (isResponse)                       //si no hay # no es nombre de intent y response en la misma linea, entonces es un example
+            if (isResponse)
             {
               response += line[i];
             }
@@ -377,14 +354,15 @@ void impDataFile(Chatbot &megabot, string filename){
         nuevo.response = response;
         pos = bPosicion(megabot,nuevo.name);
       }
-      else if(name != "")  { //si no esta vacio el string name
-        if(pos == -1){        //y encuentra la posicion, es decir, existe
+      else if(name != "")  {
+        if(pos == -1){
           Example example;
           example.text = line;
 
-          line = cleanString(line);//lo limpia
+          line = cleanString(line);
+          //example.tokens = tokenizador(line);
 
-          if (isequal(megabot.similarity, "jc"))//comprueba como tokenizarlo
+          if (isequal(megabot.similarity, "jc"))
           {
             example.tokens = tokenizador(line);
           }
@@ -393,14 +371,12 @@ void impDataFile(Chatbot &megabot, string filename){
             example.tokens = n_grama(line);
           }
           example.id = megabot.nextId;
-          if(example.tokens.size() != 0){
-            megabot.nextId++;
-            nuevo.examples.push_back(example);//realiza un pushback de example
-          }
 
+          megabot.nextId++;
+          nuevo.examples.push_back(example);
         }
         else{
-          error(ERR_INTENT);//y si no existe emite el mensaje de error
+          error(ERR_INTENT);
         }
       }
     } 
@@ -410,7 +386,7 @@ void impDataFile(Chatbot &megabot, string filename){
   }
   else
   {
-    error(ERR_FILE);
+    error(ERR_INTENT);
   }
   
   
@@ -434,26 +410,23 @@ void expData(Chatbot megabot){
     esc.open(filename, ios::out);
     if (esc.is_open())
     {
-      for (int i = 0; i < (int)megabot.intents.size(); i++) //simplemente escribimos en el fichero todos los intents que tenemos mediante un for
+      for (int i = 0; i < (int)megabot.intents.size(); i++)
       {
         esc<<"#";
-        esc<<megabot.intents[i].name;                       //el nombre entre almohadillas, a continuacion la respuesta
+        esc<<megabot.intents[i].name;
         esc<<"#";
         esc<<megabot.intents[i].response;
         esc<<"\n";
-        for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)//y en la siguiente linea, a el texto de cada example por linea
+        for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)
         {
           esc<<megabot.intents[i].examples[j].text;
 
           if(megabot.intents[i].examples[j].text[megabot.intents[i].examples[j].text.size()-1] != '\n' && (j != (int)megabot.intents.size()-1)){
-            esc<<"\n";//comprobamos que no es la ultima posicion y que no hay un endline y si es así le metemos uno
+            esc<<"\n";
           }
         }        
         esc<<"\n";
       }    
-    }
-    else{
-      error(ERR_FILE);
     }
   }
   else
@@ -467,10 +440,10 @@ void expData(Chatbot megabot){
     pos = bPosicion(megabot, intentName);
     if (pos != -1)
     {
-      cout<<"File name: "; //si se da el caso de que solo queremos guardar un intent
-      getline(cin, filename);//pedimos el nombre del intentque quiere guardar y el archivo en el que guardarlo
+      cout<<"File name: ";
+      getline(cin, filename);
       ofstream esc;
-      esc.open(filename, ios::out); //y volvemos a escribir todo de nuevo pero esta vez solo un intent, quitamos el for
+      esc.open(filename, ios::out);
       if(esc.is_open()){
         esc<<"#";
         esc<<megabot.intents[pos].name;
@@ -507,7 +480,7 @@ void addIntent(Chatbot &megabot){
 	int pos;
 	cout<<"Intent name: ";
 	getline(cin,nuevo.name);
-  pos = bPosicion(megabot,nuevo.name); //si ese intent no existe lo añade, de lo contrario imprimiría el error
+  pos = bPosicion(megabot,nuevo.name);
 	if(pos == -1){
 		megabot.intents.push_back(nuevo);
 	}
@@ -516,14 +489,11 @@ void addIntent(Chatbot &megabot){
 	}
 }
 
-char preguntar(){ //checkeamos si de verdad quiere borrar cualquier intent example, depende de en la función en la que lo llamemos
+char preguntar(){
   char confirmacion;
-  do{
-    cout<<"Confirm [Y/N]?: ";
-    cin>>confirmacion;
-    
-  }while(confirmacion != 'Y' && confirmacion != 'y' && confirmacion != 'N' && confirmacion != 'n');
-  return confirmacion; //devuelve un char y ya se comprueba en la función que se use
+  cout<<"Confirm [Y/N]?: ";
+  cin>>confirmacion;
+  return confirmacion;
 }
 
 void deleteIntent(Chatbot &megabot){
@@ -533,7 +503,7 @@ void deleteIntent(Chatbot &megabot){
   cout << "Intent name: ";
   getline(cin, name);
   pos = bPosicion(megabot, name);
-  if(pos == -1){ //si no encuentra el intent que borrar da el error, de lo contrario checkea si lo quiere borrar de verdad y si es así lo borra
+  if(pos == -1){
     error(ERR_INTENT);
   }
   else{
@@ -544,33 +514,26 @@ void deleteIntent(Chatbot &megabot){
   }
 }
 
-bool isalphanum(char example){
-  return (isdigit(example) || isalpha(example));
-}
-
 vector<string> tokenizador(string example){ 
   string token = "";
   vector<string> tokens;
-  example = cleanString(example);
-
   for (int i = 0; i < (int)example.size(); i++)
   {
-    example[i] = tolower(example[i]); //hace que todo el texto se en minusculas
+    example[i] = tolower(example[i]);
     
-    if ((isdigit(example[i]) || isalpha(example[i])))
+    if ((isdigit(example[i]) || isalpha(example[i])) && !(example[i] == 's' && example[i+1] == ' '))
     {
-      token += example[i];  //si esto se cumple se añade al token
+      token += example[i]; 
     }
     
-    else if (!token.empty() && example[i] != ',' && example[i] != '-' && example[i] == ' ') //para que si detecta dos tokens separados por una coma los una en uno
+    else if (!token.empty())
     {
-      if(token[token.size()-1] == 's') token.erase(token.begin() + token.size() - 1);//si la ultima posicion de los tokens es una ese la borra
       tokens.push_back(token);
       token = "";
     }     
   }
 
-  if(token != ""){ 
+  if(token != ""){
     if(token[token.size()-1] == 's')
     {
     token.erase(token.size()-1, 1);
@@ -578,58 +541,60 @@ vector<string> tokenizador(string example){
     tokens.push_back(token);
     token = "";
   }
-  for(unsigned i = 0; i<tokens.size(); i++){
-    if(tokens[i] == ""){
-      tokens.erase(tokens.begin()+i);
-      i--;
-    }
-  }
   return tokens;
 }
 
 vector<string> n_grama(string example){
-
-  vector<string> separated;
+  string token = "";
   vector<string> tokens;
-  string token;
-  example = cleanString(example); 
-
-  for (int i = 0; i <= (int)example.size(); i++)
+  for (int i = 0; i < (int)example.size(); i++)
   {
-    example[i] = tolower(example[i]); //hace que todo el texto se en minusculas
-  
-    
-    if ((isdigit(example[i]) || isalpha(example[i])) &&  i != (int)example.size())//comprueba si es un alphanumerico y si no es el ultimo, para 
-    {                                                                             //separar palabras
-      token += example[i];                                                         //si esto se cumple se añade al token
+    example[i] = tolower(example[i]);
+    if ((isdigit(example[i]) || isalpha(example[i])) && !(example[i] == 's' && example[i+1] == ' ') && !(example[i] == ' '))
+    {
+      token += example[i];     
+    } 
+    else if (!token.empty())
+    {
+      cout<<token<<endl;
+
+      if (token.size()>=3)
+      {
+        int cont = 0;
+        int pos = 0;
+        string aux = "";
+        while (pos < (int)token.size())
+        {
+
+          if(cont >= 3){
+            tokens.push_back(aux);
+            pos -= 2;
+            cont = 0;
+            aux = "";
+          }
+          else
+          {
+            aux += token[pos];
+            cont++;
+            pos++;
+          }
+          
+        }
+      }
+              
+      token="";
+      
+      
     }
-    
-    else if (!token.empty() && example[i] != ',' && example[i] != '-') //para que si detecta dos tokens separados por una coma los una en uno
-    {
-      unsigned cont = 0;
-      string auxstr = "";
-      while (cont+2 < token.size()) 
-      {
-        auxstr += token[cont];
-        auxstr += token[cont+1];
-        auxstr += token[cont+2];
-        if(auxstr.size() == 3) separated.push_back(auxstr);
-        auxstr = "";
-        cont++;
-      } 
-      
-      
-      token = "";
-    }     
+  
   }
-
-  for (int i = 0; i < (int)separated.size(); i++)
+  for (int i = 0; i < (int)tokens.size(); i++)
   {
-    for (int j = 0; j < (int)separated.size(); j++)
+    for (int j = 0; j < (int)tokens.size(); j++)
     {
-      if (i!=j && separated[i].compare(separated[j]) == 0) //compara los duplicados, haciendo que si encuentra dos iguales se borre uno de ellos
+      if (i!=j && tokens[i].compare(tokens[j]) == 0)
       {
-        separated.erase(separated.begin()+j);
+        tokens.erase(tokens.begin()+j);
         j++;
       }
       
@@ -637,19 +602,9 @@ vector<string> n_grama(string example){
     
   }
   
-  return separated;    
+  return tokens;    
 }
 
-
-bool onlySpaces(string str){ //por si en alguna función necesitamos comprobar si son solo espacios y no tiene contenido util
-  for(unsigned i = 0; i<str.size(); i++){
-  
-    if(str[i]!=' '){
-      return false;
-    }
-  }
-  return true;
-}
 
 void addExample(Chatbot &megabot){
   Example nuevo;
@@ -663,14 +618,13 @@ void addExample(Chatbot &megabot){
     do
     {
       cout<<"New example: ";
-      getline(cin, example);
       nuevo.id = megabot.nextId;
-      
-      if(!(example[0] == 'q' && example.size() <= 1)&& !(onlySpaces(example))){ //vemos si no es una q, es mayor de uno(para que no haya dos q seguidas por ej)
-        nuevo.text = example;                                                   //y que no sean todo espacios
+      getline(cin, example);
+      if(!(example[0] == 'q' && example.size() <= 1)){
+        nuevo.text = example;
         example = cleanString(example);
         //nuevo.tokens = tokenizador(example);
-        if (isequal(megabot.similarity, "jc")) //sirve para ver si el similarity es n-gramas o jaccard
+        if (isequal(megabot.similarity, "jc"))
         {
           nuevo.tokens = tokenizador(example);
         }
@@ -678,16 +632,11 @@ void addExample(Chatbot &megabot){
         {
           nuevo.tokens = n_grama(example);
         }
-        nuevo.id = megabot.nextId;
 
-        if(nuevo.tokens.size() != 0){
-          megabot.nextId++;
-          megabot.intents[pos].examples.push_back(nuevo);
-        }
-
-
+        megabot.nextId++;
+        megabot.intents[pos].examples.push_back(nuevo);
       }
-    } while (!(example[0] == 'q' && example.size() <= 1) );    
+    } while (!(example[0] == 'q' && example.size() <= 1));    
 	}
 	else{
 		error(ERR_INTENT);
@@ -696,29 +645,26 @@ void addExample(Chatbot &megabot){
 
 void deleteExample(Chatbot &megabot){
   int id;
-  bool deletedRight = false;
   cout<<"Example id: ";
   cin>>id;
-  if (megabot.nextId > id && id>0) //comprueba si el id es válido
+  if (megabot.nextId>= id && megabot.nextId>0)
   {
     for (int i = 0; i < (int)megabot.intents.size(); i++)
     {
-      for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)//recorre todos los ids en busca del que coincida y lo borra
+      for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)
       {
         if(megabot.intents[i].examples[j].id == id){
           megabot.intents[i].examples.erase(megabot.intents[i].examples.begin()+j);
-          deletedRight = true;
-          
         }    
       }
     }
   }
-  
-  if(!deletedRight)
+  else
   {
-     error(ERR_EXAMPLE);//si esto no se cumple emitirá el mensaje de error
+     cout<<ERR_EXAMPLE<<endl;
      
   }
+  
   
 }
 
@@ -728,7 +674,7 @@ void addResponse(Chatbot &megabot){
 	int pos;
 	cout<<"Intent name: ";
 	getline(cin,intentName);
-  pos = bPosicion(megabot,intentName);//añade una respuesta siempre y cuando exista un intent al que meter esa respuesta
+  pos = bPosicion(megabot,intentName);
 	if(pos != -1){
     cout<<"New response: ";
     getline(cin,response);
@@ -770,21 +716,19 @@ void train(Chatbot &megabot){
   }while(option!='b');
 }
 
-double jaccard(vector<string> tokens, vector<string> example){ //realiza el coeficiente de jaccard y lo calcula
+float jaccard(vector<string> tokens, vector<string> example){
   float similares = 0; // Un entero no es divisible en decimal
-
   for (int i = 0; i < (int)tokens.size(); i++)
   {
-    for (int j = 0; j < (int)example.size(); j++)//hace la interseccion de los que son similares (A con B), si lo es añade uno a similares
+    for (int j = 0; j < (int)example.size(); j++)
     {
       if(tokens[i].compare(example[j]) == 0){
         similares++;
       }
     }
   }
-  double coeficiente = (double) similares / (tokens.size() + example.size() - similares);//hace la ecuación, (A∩B)/((A+B)-(A∩B))
-  
-  return coeficiente;//devuelve el resultado 
+  float coeficiente = similares / (tokens.size() + example.size() - similares);
+  return coeficiente;
 }
 
 void test(const Chatbot &megabot){
@@ -812,9 +756,9 @@ void test(const Chatbot &megabot){
     for (int i = 0; i < (int)tokens.size(); i++)
     {
       // Así no comparamos con uno mismo, sino que empezamos por donde esté i
-      for (int j = 0; j < (int) tokens.size(); j++)
+      for (int j = i + 1; j <(int) tokens.size(); j++)
       {
-        if(i != j && (tokens[i].compare(tokens[j]) == 0)){
+        if(tokens[i].compare(tokens[j])){
           tokens.erase(tokens.begin() + j);
           j--;
         }
@@ -822,20 +766,12 @@ void test(const Chatbot &megabot){
     }
     float jaccardNum = megabot.threshold;
     int posVector = -1;
-    for (int i = (int)megabot.intents.size() - 1; i >= 0 ; i--)
+    for (int i = 0; i < (int)megabot.intents.size(); i++)
     {
-      for (int j = (int)megabot.intents[i].examples.size() - 1; j >= 0; j--)
+      for (int j = 0; j < (int)megabot.intents[i].examples.size(); j++)
       {
-        float auxJaccard = 0;
-        if(isequal(megabot.similarity, "ng")){
-          vector<string> ngTokens = n_grama(megabot.intents[i].examples[j].text);
-          auxJaccard = jaccard(tokens, ngTokens);          
-        }
-        else{
-          auxJaccard = jaccard(tokens, megabot.intents[i].examples[j].tokens);          
-        }
-
-        if(auxJaccard >= jaccardNum){
+        float auxJaccard = jaccard(tokens, megabot.intents[i].examples[j].tokens);
+        if(auxJaccard > jaccardNum){
           jaccardNum = auxJaccard;
           posVector = i;
         }
@@ -856,7 +792,7 @@ void test(const Chatbot &megabot){
 
 void report(const Chatbot &megabot){
   float totalIntents = 0, totalExamples = 0, expIntent = 0;
-  if (strcmp(megabot.similarity, "jc")==0) //según sea jaccard o n-gramas imprime uno u otro, esto se comprueba con ifs que hay en el codigo
+  if (strcmp(megabot.similarity, "jc")==0)
   {
     cout<<"Similarity: Jaccard"<<endl;
   }
@@ -868,9 +804,14 @@ void report(const Chatbot &megabot){
   
   
   cout<<"Threshold: "<<megabot.threshold<<endl;
-
+  if (megabot.intents.size() == 0)
+  {
+    cout<<"Total intents: "<<totalIntents<<endl;
+    cout<<"Total examples: "<<totalExamples<<endl;
+    cout<<"Examples per intent: "<<expIntent<<endl;
+  }
   
-  for ( int i = 0; i < (int)megabot.intents.size(); i++) //imprime todo el contenido del megabot
+  for ( int i = 0; i < (int)megabot.intents.size(); i++)
   {
     Intent in = megabot.intents[i];
     cout << "Intent: "<< in.name << endl;
@@ -879,28 +820,20 @@ void report(const Chatbot &megabot){
     for (int j = 0; j < (int)in.examples.size(); j++)
     {
       Example ex = in.examples[j];
-      cout<< "Example "<< ex.id << ":"<< ex.text<< endl;
+      cout<< "Example "<< ex.id << " : "<< ex.text<< endl;
       totalExamples++;
-      cout<< "Tokens " <<ex.id<<":";
+      cout<< "Tokens " <<ex.id<<" : ";
       for (int k = 0; k < (int)ex.tokens.size(); k++)
       {
-        cout<<"<"<<ex.tokens[k]<<">";      
+        cout<<"<"<<ex.tokens[k]<<"> ";      
       }
       cout<<endl;
     }
-  }  
-  if (megabot.intents.size() == 0) //si estamos en el caso de que el megabot esté vacío para que no de error(NaN) imprimimos comprobandolo
-  {
     cout<<"Total intents: "<<totalIntents<<endl;
     cout<<"Total examples: "<<totalExamples<<endl;
-    cout<<"Examples per intent: "<<expIntent<<endl;
-  }
-  else{
     expIntent = totalExamples/totalIntents;
-    cout<<"Total intents: "<<totalIntents<<endl;
-    cout<<"Total examples: "<<totalExamples<<endl;
     cout<<"Examples per intent: "<<expIntent<<endl;
-  }
+  }  
 }
 
 bool argumentos(Chatbot &megabot, int argc, char *argv[]){
@@ -910,9 +843,8 @@ bool argumentos(Chatbot &megabot, int argc, char *argv[]){
   {
     for (int i = 1; i < argc; i+=2)
     {
-      if (strcmp(argv[i], "-i")==0)//según sea el valor añadido detrás de la ejecucion de la práctica aquí se comprueba, si es un -i, -l o -t
-                                   // utilizamos un bool para
-      {                            //ver si uno de los argumentos ya ha sido puesto, es decir, si ya has puesto -i que no se repita
+      if (strcmp(argv[i], "-i")==0)
+      {
         if (hasi)
         {
           error(ERR_ARGS);
@@ -930,7 +862,7 @@ bool argumentos(Chatbot &megabot, int argc, char *argv[]){
           return false;
         }
         hasl = true;
-        loadChatbotFile(megabot, argv[i+1], true);
+        loadChatbotFile(megabot, argv[i+1]);
       }
       else if (strcmp(argv[i], "-t")==0)
       {
@@ -954,7 +886,7 @@ int main(int argc, char *argv[]){
   megabot.threshold=0.25;
   strcpy(megabot.similarity,"jc");
 
-  srand(666);
+  srand(101);
   bool test_bool = argumentos(megabot, argc, argv);
   char option;
   if (test_bool)
