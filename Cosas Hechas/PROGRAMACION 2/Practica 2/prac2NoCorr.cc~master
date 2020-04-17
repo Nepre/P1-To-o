@@ -215,6 +215,10 @@ void loadChatbotFile(Chatbot &megabot,string binName){
         auxStr = exampleAux;
         expAux.text = exampleAux;
         //expAux.tokens = tokenizador(exampleAux);
+<<<<<<< HEAD:Cosas Hechas/PROGRAMACION 2/Practica 2/prac2Limpio.cc
+=======
+
+>>>>>>> master:Cosas Hechas/PROGRAMACION 2/Practica 2/prac2NoCorr.cc
         if (isequal(megabot.similarity, "jc"))
         {
           expAux.tokens = tokenizador(exampleAux);
